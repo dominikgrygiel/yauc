@@ -5,8 +5,8 @@
 int main(int argc, const char *argv[])
 {
   describe("Message") {
-    it("decodes from string") {
-      Message msg = Message_decode("GET foo");
+    it("parses from string") {
+      Message msg = Message_parse("GET foo");
       assert_equal(msg.type, MESSAGE_GET);
     }
   }

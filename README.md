@@ -19,3 +19,5 @@ clib install -d
 ```bash
 make test
 ```
+
+### Using (guard)[https://github.com/guard/guard] to automatically run tests

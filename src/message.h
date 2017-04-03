@@ -10,6 +10,6 @@ typedef struct MessageStruct {
 } Message;
 
 
-Message Message_decode(char *);
+Message Message_parse(char *);
 
 #endif
