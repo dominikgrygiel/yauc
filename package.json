@@ -1,0 +1,14 @@
+{
+  "name": "yauc",
+  "version": "0.0.1",
+  "repo": "dominikgrygiel/yauc",
+  "description": "Yet Another Useless Cache",
+  "keywords": [
+    "useless",
+    "cache",
+    "server"
+  ],
+  "development": {
+    "stephenmathieson/describe.h": "*"
+  }
+}
