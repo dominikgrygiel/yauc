@@ -31,6 +31,8 @@ void handle_client(int client_sock) {
       Message msg = Message_parse(raw_msg, msg_size);
 
       printf("%d %s %s\n", msg.type, msg.key, msg.value);
+
+      Message_free(&msg);
     } else {
       // TODO: handle messages longer than buffer size and multiple messages inside buffer
     }
