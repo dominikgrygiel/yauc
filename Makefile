@@ -29,4 +29,6 @@ test: $(DEPS_OBJS) $(SRC_OBJS) $(TESTS)
 clean:
 	rm -f $(DEPS_OBJS) $(SRC_OBJS) $(BIN) $(TARGET_STATIC) $(TARGET_DSO) $(TARGET_DSOLIB) *.so*
 
+all: clean test build
+
 .PHONY: $(SRC_OBJS) $(TESTS) test
