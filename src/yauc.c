@@ -8,7 +8,8 @@
 #include <netdb.h>
 #include <string.h>
 
-#include "message.h"
+#include "request.h"
+#include "response.h"
 
 #define LISTEN_BACKLOG_SIZE 10
 #define READ_BUFFER_SIZE 1024
@@ -16,31 +17,38 @@
 
 volatile int server_sock = -1;
 
-Message *handle_client_message(Message *msg) {
-  Message *repsonse_msg = Message_new();
+Response *handle_client_request(Request *req) {
+  Response *resp = Response_new();
 
-  switch (msg->type) {
-    case MESSAGE_INFO:
+  switch (req->type) {
+    case REQUEST_INFO:
       break;
-    case MESSAGE_FLUSH:
+    case REQUEST_FLUSH:
+      resp->type = RESPONSE_OK;
       break;
-    case MESSAGE_GET:
+    case REQUEST_GET:
       break;
-    case MESSAGE_SET:
+    case REQUEST_SET:
       break;
-    case MESSAGE_DEL:
+    case REQUEST_DEL:
       break;
-    case MESSAGE_INCR:
+    case REQUEST_INCR:
       break;
-    case MESSAGE_DECR:
+    case REQUEST_DECR:
       break;
-    case MESSAGE_URL:
+    case REQUEST_URL:
       break;
     default:
+      if (req->type < 0) {
+        resp->type = (int)req->type;
+      } else {
+        resp->type = RESPONSE_ERR_UNKNOWN_REQUEST;
+      }
       break;
   }
 
-  return repsonse_msg;
+  Response_encode(resp);
+  return resp;
 }
 
 void handle_client(int client_sock) {
@@ -48,27 +56,28 @@ void handle_client(int client_sock) {
   int read_bytes;
 
   while ((read_bytes = read(client_sock, &read_buff, READ_BUFFER_SIZE)) > 0) {
-    char *msg_end = strstr(read_buff, CRLF);
-    Message *msg = NULL;
+    char *req_end = strstr(read_buff, CRLF);
+    Request *req = NULL;
 
-    if (msg_end) {
-      int msg_size = msg_end - read_buff;
-      char raw_msg[msg_size];
-      memcpy(raw_msg, read_buff, msg_size);
+    if (req_end) {
+      int req_size = req_end - read_buff;
+      char raw_req[req_size];
+      memcpy(raw_req, read_buff, req_size);
 
-      msg = Message_new();
-      Message_parse(msg, raw_msg, msg_size);
+      req = Request_new();
+      Request_parse(req, raw_req, req_size);
     } else {
-      // TODO: handle messages longer than buffer size and multiple messages inside buffer
+      // TODO: handle requests longer than buffer size and multiple requests inside buffer
     }
 
-    if (msg) {
-      Message *response_msg = handle_client_message(msg);
+    if (req) {
+      Response *resp = handle_client_request(req);
 
-      write(client_sock, ":1\r\n", 4);
+      write(client_sock, resp->encoded, resp->encoded_size);
+      write(client_sock, CRLF, 2);
 
-      Message_free(msg);
-      Message_free(response_msg);
+      Request_free(req);
+      Response_free(resp);
     }
   }
 
