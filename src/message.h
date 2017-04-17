@@ -4,7 +4,8 @@
 #define MESSAGE_KEY_MAX_SIZE 255
 
 enum MESSAGE_TYPES {
-  MESSAGE_INFO = 1,
+  MESSAGE_OK = 1,
+  MESSAGE_INFO,
   MESSAGE_FLUSH,
   MESSAGE_GET,
   MESSAGE_SET,
@@ -27,7 +28,8 @@ typedef struct MessageStruct {
 } Message;
 
 
-Message Message_parse(char *, int raw_size);
-void Message_free(Message *);
+Message *Message_new();
+void Message_parse(Message *msg, char *raw, int raw_size);
+void Message_free(Message *msg);
 
 #endif

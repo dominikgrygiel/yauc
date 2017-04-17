@@ -16,25 +16,59 @@
 
 volatile int server_sock = -1;
 
+Message *handle_client_message(Message *msg) {
+  Message *repsonse_msg = Message_new();
+
+  switch (msg->type) {
+    case MESSAGE_INFO:
+      break;
+    case MESSAGE_FLUSH:
+      break;
+    case MESSAGE_GET:
+      break;
+    case MESSAGE_SET:
+      break;
+    case MESSAGE_DEL:
+      break;
+    case MESSAGE_INCR:
+      break;
+    case MESSAGE_DECR:
+      break;
+    case MESSAGE_URL:
+      break;
+    default:
+      break;
+  }
+
+  return repsonse_msg;
+}
+
 void handle_client(int client_sock) {
   char read_buff[READ_BUFFER_SIZE] = {0};
   int read_bytes;
 
   while ((read_bytes = read(client_sock, &read_buff, READ_BUFFER_SIZE)) > 0) {
     char *msg_end = strstr(read_buff, CRLF);
+    Message *msg = NULL;
 
     if (msg_end) {
       int msg_size = msg_end - read_buff;
       char raw_msg[msg_size];
       memcpy(raw_msg, read_buff, msg_size);
 
-      Message msg = Message_parse(raw_msg, msg_size);
-
-      printf("%d %s %s\n", msg.type, msg.key, msg.value);
-
-      Message_free(&msg);
+      msg = Message_new();
+      Message_parse(msg, raw_msg, msg_size);
     } else {
       // TODO: handle messages longer than buffer size and multiple messages inside buffer
+    }
+
+    if (msg) {
+      Message *response_msg = handle_client_message(msg);
+
+      write(client_sock, ":1\r\n", 4);
+
+      Message_free(msg);
+      Message_free(response_msg);
     }
   }
 

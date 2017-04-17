@@ -37,37 +37,44 @@ void set_msg_value(Message *message, char *raw, int raw_size, int offset) {
   }
 }
 
-Message Message_parse(char *raw, int raw_size) {
-  Message message = {.key = NULL, .key_size = 0, .value = NULL, .value_size = 0};
+Message *Message_new() {
+  Message *msg = malloc(sizeof(Message));
 
-  if (strncmp(raw, "GET ", 4) == 0) {
-    message.type = MESSAGE_GET;
-    set_msg_key(&message, raw, raw_size, 4);
-  } else if (strncmp(raw, "SET ", 4) == 0) {
-    message.type = MESSAGE_SET;
-    set_msg_key(&message, raw, raw_size, 4);
-    set_msg_value(&message, raw, raw_size, 4);
-  } else if (strncmp(raw, "DEL ", 4) == 0) {
-    message.type = MESSAGE_DEL;
-    set_msg_key(&message, raw, raw_size, 4);
-  } else if (strncmp(raw, "INCR ", 5) == 0) {
-    message.type = MESSAGE_INCR;
-    set_msg_key(&message, raw, raw_size, 5);
-  } else if (strncmp(raw, "DECR ", 5) == 0) {
-    message.type = MESSAGE_DECR;
-    set_msg_key(&message, raw, raw_size, 5);
-  } else if (strncmp(raw, "URL ", 4) == 0) {
-    message.type = MESSAGE_URL;
-    set_msg_key(&message, raw, raw_size, 4);
+  msg->key = NULL;
+  msg->key_size = 0;
+  msg->value = NULL;
+  msg->value_size = 0;
+
+  return msg;
+}
+
+void Message_parse(Message *message, char *raw, int raw_size) {
+  if ((raw_size >= 4) && (strncmp(raw, "GET ", 4) == 0)) {
+    message->type = MESSAGE_GET;
+    set_msg_key(message, raw, raw_size, 4);
+  } else if ((raw_size >= 4) && (strncmp(raw, "SET ", 4) == 0)) {
+    message->type = MESSAGE_SET;
+    set_msg_key(message, raw, raw_size, 4);
+    set_msg_value(message, raw, raw_size, 4);
+  } else if ((raw_size >= 4) && (strncmp(raw, "DEL ", 4) == 0)) {
+    message->type = MESSAGE_DEL;
+    set_msg_key(message, raw, raw_size, 4);
+  } else if ((raw_size >= 5) && (strncmp(raw, "INCR ", 5) == 0)) {
+    message->type = MESSAGE_INCR;
+    set_msg_key(message, raw, raw_size, 5);
+  } else if ((raw_size >= 5) && (strncmp(raw, "DECR ", 5) == 0)) {
+    message->type = MESSAGE_DECR;
+    set_msg_key(message, raw, raw_size, 5);
+  } else if ((raw_size >= 4) && (strncmp(raw, "URL ", 4) == 0)) {
+    message->type = MESSAGE_URL;
+    set_msg_key(message, raw, raw_size, 4);
   } else if ((raw_size == 5) && (strncmp(raw, "FLUSH", 5) == 0)) {
-    message.type = MESSAGE_FLUSH;
+    message->type = MESSAGE_FLUSH;
   } else if ((raw_size == 4) && (strncmp(raw, "INFO", 4) == 0)) {
-    message.type = MESSAGE_INFO;
+    message->type = MESSAGE_INFO;
   } else {
-    message.type = MESSAGE_ERR_PARSING;
+    message->type = MESSAGE_ERR_PARSING;
   }
-
-  return message;
 }
 
 void Message_free(Message *msg) {
