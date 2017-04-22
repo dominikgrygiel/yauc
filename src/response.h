@@ -4,7 +4,7 @@
 enum RESPONSE_TYPES {
   RESPONSE_OK = 1,
   RESPONSE_STRING,
-  RESPONSE_INTEGER,
+  RESPONSE_NUMBER,
 
   // ERRORS
   RESPONSE_ERR_UNKNOWN_REQUEST = -30,
@@ -16,11 +16,19 @@ enum RESPONSE_TYPES {
 
 typedef struct ResponseStruct {
   enum RESPONSE_TYPES type;
+  union {
+    char *text;
+    int number;
+  };
   char *encoded;
   int encoded_size;
 } Response;
 
 Response *Response_new();
+Response *Response_new_string(char *text);
+Response *Response_new_number(int number);
+void Response_set_string(Response *resp, char *text);
+void Response_set_number(Response *resp, int number);
 void Response_encode(Response *resp);
 void Response_free(Response *resp);
 

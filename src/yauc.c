@@ -15,6 +15,8 @@
 #define READ_BUFFER_SIZE 1024
 #define CRLF "\r\n"
 
+#define WELCOME_MESSAGE "Starting YAUC (Yet Another Useless Cache)\n"
+
 volatile int server_sock = -1;
 
 Response *handle_client_request(Request *req) {
@@ -22,21 +24,28 @@ Response *handle_client_request(Request *req) {
 
   switch (req->type) {
     case REQUEST_INFO:
+      Response_set_string(resp, WELCOME_MESSAGE);
       break;
     case REQUEST_FLUSH:
       resp->type = RESPONSE_OK;
       break;
     case REQUEST_GET:
+      Response_set_string(resp, "Hello World!");
       break;
     case REQUEST_SET:
+      resp->type = RESPONSE_OK;
       break;
     case REQUEST_DEL:
+      resp->type = RESPONSE_OK;
       break;
     case REQUEST_INCR:
+      Response_set_number(resp, 10);
       break;
     case REQUEST_DECR:
+      Response_set_number(resp, -13);
       break;
     case REQUEST_URL:
+      Response_set_string(resp, "<html><body><h1>Welcome!</h1></body></html>");
       break;
     default:
       if (req->type < 0) {
@@ -132,7 +141,7 @@ void signal_handler(int sig) {
 
 int main(int argc, const char *argv[])
 {
-  fprintf(stderr, "Starting YAUC (Yet Another Useless Cache)\n");
+  fprintf(stderr, WELCOME_MESSAGE);
 
   server_sock = new_socket(4040);
   if (server_sock == -1) {

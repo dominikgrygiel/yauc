@@ -1,5 +1,6 @@
 #include <string.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include "request.h"
 
@@ -50,6 +51,9 @@ Request *Request_new() {
 }
 
 void Request_parse(Request *request, char *raw, int raw_size) {
+  assert(request);
+  assert(raw);
+
   if ((raw_size >= 4) && (strncmp(raw, "GET ", 4) == 0)) {
     request->type = REQUEST_GET;
     set_req_key(request, raw, raw_size, 4);
@@ -79,14 +83,14 @@ void Request_parse(Request *request, char *raw, int raw_size) {
 }
 
 void Request_free(Request *req) {
-  if (req) {
-    if (req->key) {
-      free(req->key);
-      req->key = NULL;
-    }
-    if (req->value) {
-      free(req->value);
-      req->value = NULL;
-    }
+  assert(req);
+
+  if (req->key) {
+    free(req->key);
+    req->key = NULL;
+  }
+  if (req->value) {
+    free(req->value);
+    req->value = NULL;
   }
 }
