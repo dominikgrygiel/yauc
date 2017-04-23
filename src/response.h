@@ -25,9 +25,9 @@ typedef struct ResponseStruct {
 } Response;
 
 Response *Response_new();
-Response *Response_new_string(char *text);
+Response *Response_new_string(const char *text);
 Response *Response_new_number(int number);
-void Response_set_string(Response *resp, char *text);
+void Response_set_string(Response *resp, const char *text);
 void Response_set_number(Response *resp, int number);
 void Response_encode(Response *resp);
 void Response_free(Response *resp);

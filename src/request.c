@@ -4,7 +4,7 @@
 
 #include "request.h"
 
-void set_req_key(Request *request, char *raw, int raw_size, int offset) {
+void set_req_key(Request *request, const char *raw, int raw_size, int offset) {
   if (raw_size > offset && raw[offset] != ' ') {
     int max_key_size = raw_size - offset > REQUEST_KEY_MAX_SIZE ? REQUEST_KEY_MAX_SIZE : raw_size - offset;
     char *key_end = memchr(raw + offset, ' ', max_key_size);
@@ -23,7 +23,7 @@ void set_req_key(Request *request, char *raw, int raw_size, int offset) {
   }
 }
 
-void set_req_value(Request *request, char *raw, int raw_size, int offset) {
+void set_req_value(Request *request, const char *raw, int raw_size, int offset) {
   if (request->type <= 0) return;
 
   int value_offset = offset + request->key_size + 1;
@@ -50,7 +50,7 @@ Request *Request_new() {
   return req;
 }
 
-void Request_parse(Request *request, char *raw, int raw_size) {
+void Request_parse(Request *request, const char *raw, int raw_size) {
   assert(request);
   assert(raw);
 

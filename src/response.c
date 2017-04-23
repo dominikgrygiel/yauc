@@ -24,7 +24,7 @@ Response *Response_new() {
   return resp;
 }
 
-Response *Response_new_string(char *text) {
+Response *Response_new_string(const char *text) {
   assert(text);
 
   Response *resp = Response_new();
@@ -44,7 +44,7 @@ Response *Response_new_number(int number) {
   return resp;
 }
 
-void Response_set_string(Response *resp, char *text) {
+void Response_set_string(Response *resp, const char *text) {
   assert(resp);
   assert(text);
 

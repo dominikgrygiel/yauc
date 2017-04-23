@@ -28,7 +28,7 @@ typedef struct RequestStruct {
 
 
 Request *Request_new();
-void Request_parse(Request *req, char *raw, int raw_size);
+void Request_parse(Request *req, const char *raw, int raw_size);
 void Request_free(Request *req);
 
 #endif
