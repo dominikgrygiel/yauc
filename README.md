@@ -2,6 +2,52 @@
 
 Yet Another Useless Cache.
 
+## Operation
+
+```
+$ telnet 127.0.0.1 4040
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is '^]'.
+GET a
+:0
+SET a test
+:1
+GET a
++test
+DEL a
+:1
+GET a
+:0
+INCR i
+:1
+INCR i
+:2
+INCR i
+:3
+GET i
++3
+DECR i
+:2
+GET i
++2
+WRONG OPERATION
+-40
+GET
+-40
+SET a
+-41
+FLUSH
+:1
+GET i
+:0
+INFO
++Starting YAUC (Yet Another Useless Cache)
+
+^]
+telnet> Connection closed.
+```
+
 ## Development
 
 ### Required packages
