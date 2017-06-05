@@ -7,6 +7,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <string.h>
+#include <pthread.h>
 
 #include "request.h"
 #include "response.h"
@@ -20,8 +21,13 @@
 #define DB_LOG_PATH "yauc.db"
 
 volatile int server_sock = -1;
+pthread_mutex_t db_lock = PTHREAD_MUTEX_INITIALIZER;
 Database *db = NULL;
 FILE *db_log = NULL;
+
+struct thread_data_t {
+  int client_sock;
+};
 
 Response *handle_request(Request *req) {
   Response *resp = Response_new();
@@ -72,7 +78,10 @@ Response *handle_request(Request *req) {
   return resp;
 }
 
-void handle_client(int client_sock) {
+void *handle_client(void *t_data) {
+  struct thread_data_t *thread_data = (struct thread_data_t*)t_data;
+  int client_sock = thread_data->client_sock;
+
   char read_buff[READ_BUFFER_SIZE] = {0};
   int read_bytes;
 
@@ -95,7 +104,9 @@ void handle_client(int client_sock) {
     }
 
     if (req) {
+      pthread_mutex_lock(&db_lock);
       Response *resp = handle_request(req);
+      pthread_mutex_unlock(&db_lock);
 
       fwrite(raw_req, sizeof(char), raw_req_size, db_log);
       fwrite("\n", sizeof(char), 1, db_log);
@@ -109,6 +120,20 @@ void handle_client(int client_sock) {
   }
 
   close(client_sock);
+  pthread_exit(NULL);
+}
+
+void handle_connection(int client_sock) {
+  pthread_t client_thread;
+  struct thread_data_t t_data;
+  t_data.client_sock = client_sock;
+
+  int create_result = 0;
+  if ((create_result = pthread_create(&client_thread, NULL, handle_client, (void *)&t_data))) {
+    fprintf(stderr, "pthread_create failure: %d\n", create_result);
+  }
+
+  pthread_detach(client_thread);
 }
 
 static int new_socket(int port) {
@@ -211,7 +236,7 @@ int main(int argc, const char *argv[])
     if (client_sock < 0) {
       fprintf(stderr, "Couldn't accept connection from client!\n");
     } else {
-      handle_client(client_sock);
+      handle_connection(client_sock);
     }
   }
 
