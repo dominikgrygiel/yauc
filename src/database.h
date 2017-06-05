@@ -1,8 +1,6 @@
 #ifndef DATABASE_H_INCLUDED
 #define DATABASE_H_INCLUDED
 
-#include <stdio.h>
-
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wnewline-eof"
 #pragma GCC diagnostic ignored "-Wextra-semi"
@@ -11,11 +9,9 @@
 
 typedef struct DatabaseStruct {
   hash_t *store;
-  FILE *data_log;
 } Database;
 
 Database *Database_new();
-Database *Database_new_with_log(char *data_log_path);
 char *Database_info(Database *db);
 void Database_flush(Database *db);
 char *Database_get(Database *db, char *key);

@@ -17,11 +17,13 @@
 #define CRLF "\r\n"
 
 #define WELCOME_MESSAGE "Starting YAUC (Yet Another Useless Cache)\n"
+#define DB_LOG_PATH "yauc.db"
 
 volatile int server_sock = -1;
 Database *db = NULL;
+FILE *db_log = NULL;
 
-Response *handle_client_request(Request *req) {
+Response *handle_request(Request *req) {
   Response *resp = Response_new();
   char *value;
 
@@ -78,19 +80,25 @@ void handle_client(int client_sock) {
     char *req_end = strstr(read_buff, CRLF);
     Request *req = NULL;
 
+    int raw_req_size = 0;
+    char *raw_req = NULL;
+
     if (req_end) {
-      int req_size = req_end - read_buff;
-      char raw_req[req_size];
-      memcpy(raw_req, read_buff, req_size);
+      raw_req_size = req_end - read_buff;
+      raw_req = malloc(sizeof(char) * raw_req_size);
+      memcpy(raw_req, read_buff, raw_req_size);
 
       req = Request_new();
-      Request_parse(req, raw_req, req_size);
+      Request_parse(req, raw_req, raw_req_size);
     } else {
       // TODO: handle requests longer than buffer size and multiple requests inside buffer
     }
 
     if (req) {
-      Response *resp = handle_client_request(req);
+      Response *resp = handle_request(req);
+
+      fwrite(raw_req, sizeof(char), raw_req_size, db_log);
+      fwrite("\n", sizeof(char), 1, db_log);
 
       write(client_sock, resp->encoded, resp->encoded_size);
       write(client_sock, CRLF, 2);
@@ -136,6 +144,32 @@ static int new_socket(int port) {
   return sock;
 }
 
+void setup_read_db_log() {
+  if ((db_log = fopen(DB_LOG_PATH, "r"))) {
+    char *line = NULL;
+    size_t len = 0;
+    ssize_t read;
+
+    while ((read = getline(&line, &len, db_log)) != -1) {
+      Request *req = Request_new();
+      Request_parse(req, line, read - 1);
+      line[read - 1] = '\0';
+
+      Response *resp = handle_request(req);
+
+      Request_free(req);
+      Response_free(resp);
+    }
+    fclose(db_log);
+  }
+
+  db_log = fopen(DB_LOG_PATH, "a");
+  if (db_log == NULL) {
+    fprintf(stderr, "Couldn't open log file!\n");
+    exit(2);
+  }
+}
+
 void signal_handler(int sig) {
   switch (sig) {
     case SIGTERM:
@@ -143,6 +177,8 @@ void signal_handler(int sig) {
       fprintf(stderr, "YAUC shutting down...\n");
       Database_free(db);
       db = NULL;
+      fclose(db_log);
+      db_log = NULL;
       close(server_sock);
       exit(0);
     default:
@@ -162,6 +198,7 @@ int main(int argc, const char *argv[])
   }
 
   db = Database_new();
+  setup_read_db_log();
 
   signal(SIGINT, signal_handler);
   signal(SIGTERM, signal_handler);

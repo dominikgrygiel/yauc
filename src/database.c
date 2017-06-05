@@ -10,26 +10,6 @@ Database *Database_new() {
   Database *db = malloc(sizeof(Database));
 
   db->store = hash_new();
-  db->data_log = NULL;
-
-  return db;
-}
-
-Database *Database_new_with_log(char *data_log_path) {
-  Database *db = Database_new();
-  FILE *log_file = NULL;
-
-  if ((log_file = fopen(data_log_path, "r"))) {
-    // TODO: read log file
-    fclose(log_file);
-  }
-
-  if ((log_file = fopen(data_log_path, "wa"))) {
-    db->data_log = log_file;
-  } else {
-    fprintf(stderr, "Couldn't open log file!\n");
-    exit(2);
-  }
 
   return db;
 }
@@ -117,10 +97,6 @@ void Database_flush(Database *db) {
 void Database_free(Database *db) {
   assert(db);
 
-  if (db->data_log) {
-    fclose(db->data_log);
-    db->data_log = NULL;
-  }
   if (db->store) {
     hash_free(db->store);
     db->store = NULL;

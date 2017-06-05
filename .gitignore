@@ -1,5 +1,6 @@
 deps/
 /yauc
+/yauc.db
 
 # Created by https://www.gitignore.io/api/c
 
