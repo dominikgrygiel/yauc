@@ -4,14 +4,7 @@
 #include <assert.h>
 
 #include "response.h"
-
-void itoa_r(int n, char *buff_end) {
-  while (n > 0) {
-    *buff_end = (char) n % 10 + '0';
-    buff_end--;
-    n /= 10;
-  }
-}
+#include "util.h"
 
 Response *Response_new() {
   Response *resp = malloc(sizeof(Response));
@@ -78,6 +71,12 @@ void Response_encode(Response *resp) {
       if (resp->number == 0) {
         resp->encoded_size = 2;
         resp->encoded = strdup(":0");
+      } else if (resp->number == 1) {
+        resp->encoded_size = 2;
+        resp->encoded = strdup(":1");
+      } else if (resp->number == -1) {
+        resp->encoded_size = 3;
+        resp->encoded = strdup(":-1");
       } else if (resp->number > 0) {
         resp->encoded_size = ceil(log10(resp->number)) + 1;
         resp->encoded = malloc(sizeof(char) * (resp->encoded_size + 1));
@@ -92,6 +91,10 @@ void Response_encode(Response *resp) {
         resp->encoded[resp->encoded_size] = '\0';
         itoa_r(resp->number * -1, resp->encoded + resp->encoded_size - 1);
       }
+      break;
+    case RESPONSE_EMPTY:
+      resp->encoded_size = 2;
+      resp->encoded = strdup(":0");
       break;
     case RESPONSE_ERR_UNKNOWN_REQUEST:
     case RESPONSE_ERR_PARSING:

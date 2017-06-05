@@ -8,10 +8,11 @@ TESTS = $(wildcard test/*.c)
 DEPS_OBJS = $(DEPS:.c=.o)
 SRC_OBJS = $(SRC:.c=.o)
 
-CFLAGS += -std=c11 -Wall -O2 -pedantic -Ideps -Isrc
+DEPS_CFLAGS = -std=c11 -O2 -Ideps
+CFLAGS += -std=c11 -Wall -pedantic -O2 -Ideps -Isrc
 
 $(DEPS_OBJS):
-	 $(CC) $(CFLAGS) -c -o $@ $(@:.o=.c)
+	 $(CC) $(DEPS_CFLAGS) -c -o $@ $(@:.o=.c)
 
 $(SRC_OBJS):
 	 $(CC) $(CFLAGS) -c -o $@ $(@:.o=.c)

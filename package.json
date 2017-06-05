@@ -8,6 +8,9 @@
     "cache",
     "server"
   ],
+  "dependencies": {
+    "clibs/hash": "0.0.1"
+  },
   "development": {
     "stephenmathieson/describe.h": "*"
   }

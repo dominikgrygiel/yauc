@@ -10,6 +10,7 @@
 
 #include "request.h"
 #include "response.h"
+#include "database.h"
 
 #define LISTEN_BACKLOG_SIZE 10
 #define READ_BUFFER_SIZE 1024
@@ -18,31 +19,40 @@
 #define WELCOME_MESSAGE "Starting YAUC (Yet Another Useless Cache)\n"
 
 volatile int server_sock = -1;
+Database *db = NULL;
 
 Response *handle_client_request(Request *req) {
   Response *resp = Response_new();
+  char *value;
 
   switch (req->type) {
     case REQUEST_INFO:
       Response_set_string(resp, WELCOME_MESSAGE);
       break;
     case REQUEST_FLUSH:
+      Database_flush(db);
       resp->type = RESPONSE_OK;
       break;
     case REQUEST_GET:
-      Response_set_string(resp, "Hello World!");
+      if ((value = Database_get(db, req->key))) {
+        Response_set_string(resp, value);
+      } else {
+        resp->type = RESPONSE_EMPTY;
+      }
       break;
     case REQUEST_SET:
+      Database_set(db, req->key, req->value);
       resp->type = RESPONSE_OK;
       break;
     case REQUEST_DEL:
+      Database_del(db, req->key);
       resp->type = RESPONSE_OK;
       break;
     case REQUEST_INCR:
-      Response_set_number(resp, 10);
+      Response_set_number(resp, Database_incr(db, req->key));
       break;
     case REQUEST_DECR:
-      Response_set_number(resp, -13);
+      Response_set_number(resp, Database_decr(db, req->key));
       break;
     case REQUEST_URL:
       Response_set_string(resp, "<html><body><h1>Welcome!</h1></body></html>");
@@ -131,6 +141,8 @@ void signal_handler(int sig) {
     case SIGTERM:
     case SIGINT:
       fprintf(stderr, "YAUC shutting down...\n");
+      Database_free(db);
+      db = NULL;
       close(server_sock);
       exit(0);
     default:
@@ -148,6 +160,8 @@ int main(int argc, const char *argv[])
     fprintf(stderr, "Could not create socket\n");
     exit(1);
   }
+
+  db = Database_new();
 
   signal(SIGINT, signal_handler);
   signal(SIGTERM, signal_handler);

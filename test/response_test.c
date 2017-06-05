@@ -17,6 +17,17 @@ int main(int argc, const char *argv[])
       Response_free(resp);
     }
 
+    it("encodes empty responses") {
+      Response *resp = Response_new();
+      resp->type = RESPONSE_EMPTY;
+      Response_encode(resp);
+
+      assert_str_equal(resp->encoded, ":0");
+      assert_equal(resp->encoded_size, 2);
+
+      Response_free(resp);
+    }
+
     it("encodes string repsonses") {
       Response *resp = Response_new_string("Hello World!");
       Response_encode(resp);
@@ -32,6 +43,36 @@ int main(int argc, const char *argv[])
       Response_encode(resp);
 
       assert_str_equal(resp->encoded, ":42");
+      assert_equal(resp->encoded_size, 3);
+
+      Response_free(resp);
+    }
+
+    it("encodes integer responses when number = 1") {
+      Response *resp = Response_new_number(1);
+      Response_encode(resp);
+
+      assert_str_equal(resp->encoded, ":1");
+      assert_equal(resp->encoded_size, 2);
+
+      Response_free(resp);
+    }
+
+    it("encodes integer responses when number = 0") {
+      Response *resp = Response_new_number(0);
+      Response_encode(resp);
+
+      assert_str_equal(resp->encoded, ":0");
+      assert_equal(resp->encoded_size, 2);
+
+      Response_free(resp);
+    }
+
+    it("encodes integer responses when number = -1") {
+      Response *resp = Response_new_number(-1);
+      Response_encode(resp);
+
+      assert_str_equal(resp->encoded, ":-1");
       assert_equal(resp->encoded_size, 3);
 
       Response_free(resp);
