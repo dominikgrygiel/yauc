@@ -2,6 +2,8 @@
 
 Yet Another Useless Cache.
 
+**NOTE:** Just a toy project, not intended for production use.
+
 ## Operation
 
 ```
@@ -66,7 +68,7 @@ clib install -d
 make test
 ```
 
-### Using (guard)[https://github.com/guard/guard] to automatically run tests
+### Using [guard](https://github.com/guard/guard) to automatically run tests
 
 Install guard:
 
